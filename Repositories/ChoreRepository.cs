@@ -52,6 +52,7 @@ namespace RoomMates.Repositories
 
                     chore.Id = id;
                 }
+                conn.Close();
 
             }
         }
@@ -62,7 +63,9 @@ namespace RoomMates.Repositories
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "Select c.id, c.name from Chore as c left join RoommateChore as r on r.ChoreId = c.Id where r.RoommateId is NULL;";
+                    cmd.CommandText = @"Select c.id, c.name from Chore as c 
+                                        left join RoommateChore as r on r.ChoreId = c.Id 
+                                        where r.RoommateId is NULL;";
                     SqlDataReader reader = cmd.ExecuteReader();
                     List<Chore> unassingedList = new List<Chore>() { };
                     while (reader.Read())
@@ -78,6 +81,20 @@ namespace RoomMates.Repositories
                     reader.Close();
                     return unassingedList;
                 }
+            }
+        }
+        public void AssignAChore(int roommateId, int choreId)
+        {
+            using (SqlConnection conn = Connection) {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand()) {
+                    cmd.CommandText = @"Insert into RoommateChore (RoommateId, ChoreId)
+                                        Values (@roomateId, @choreid)";
+                    cmd.Parameters.AddWithValue("@roomateId", roommateId);
+                    cmd.Parameters.AddWithValue("@choreId", choreId);
+                    cmd.ExecuteNonQuery();
+                }
+                conn.Close();
             }
         }
         public List<Chore> GetAll()
