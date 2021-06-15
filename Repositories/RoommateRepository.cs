@@ -75,5 +75,6 @@ namespace RoomMates.Repositories
                 }
             }
         }
-    }
+        
+    }// end of class brace
 }
