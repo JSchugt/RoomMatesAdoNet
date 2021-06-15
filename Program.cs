@@ -2,6 +2,7 @@
 using RoomMates.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RoomMates
 {
@@ -15,6 +16,8 @@ namespace RoomMates
         {
             RoomRepository roomRepo = new RoomRepository(CONNECTION_STRING);
             ChoreRepository choreRepo = new ChoreRepository(CONNECTION_STRING);
+            RoommateRepository roommateRepo = new RoommateRepository(CONNECTION_STRING);
+            roommateRepo.GetById(1);
             bool runProgram = true;
             while (runProgram)
             {
@@ -93,6 +96,66 @@ namespace RoomMates
                         Console.Write("Press any key to continue");
                         Console.ReadKey();
                         break;
+                    case ("Show a Roommate"):
+                        Console.Write("Roommate and room: ");
+                        int idRoommate = int.Parse(Console.ReadLine());
+                        Roommate roommate = roommateRepo.GetById(idRoommate);
+                        Console.WriteLine($"{roommate.Id } - {roommate.FirstName} {roommate.RentPortion} {roommate.Room.MaxOccupancy}");
+                        Console.Write("Press any key to continue");
+                        Console.ReadKey();
+
+                        break;
+                    case ("Get unassigned chores"):
+                        List<Chore> uChores = choreRepo.GetUnassigned();
+                        foreach (Chore c in uChores)
+                        {
+                            Console.WriteLine($"ID: {c.Id}  Name: {c.Name}");
+                        }
+                        Console.Write("Press any key to continue");
+                        Console.ReadKey();
+
+                        break;
+                    case ("Assign A Chore"):
+                        List<Chore> ueChores = choreRepo.GetAll();
+                        foreach (Chore c in ueChores)
+                        {
+                            Console.WriteLine($"ID: {c.Id}  Name: {c.Name}");
+                        }
+                        Console.Write("Select a chore");
+                        int select = int.Parse(Console.ReadLine());
+                        List<Roommate> allRommers = roommateRepo.GetAll();
+                        foreach (Roommate r in allRommers)
+                        {
+                            Console.WriteLine($"{r.Id} {r.FirstName }");
+                        }
+                        int rSelect = int.Parse(Console.ReadLine());
+                        choreRepo.AssignAChore(rSelect, select);
+                        Console.WriteLine("Action Complete");
+                        Console.ReadKey();
+                        break;
+                    case ("Update a room"):
+                        List<Room> roomOptions = roomRepo.GetAll();
+                        foreach (Room r in roomOptions)
+                        {
+                            Console.WriteLine($"{r.Id} - {r.Name} Max Occupancy({r.MaxOccupancy})");
+                        }
+
+                        Console.Write("Which room would you like to update? ");
+                        int selectedRoomId = int.Parse(Console.ReadLine());
+                        Room selectedRoom = roomOptions.FirstOrDefault(r => r.Id == selectedRoomId);
+
+                        Console.Write("New Name: ");
+                        selectedRoom.Name = Console.ReadLine();
+
+                        Console.Write("New Max Occupancy: ");
+                        selectedRoom.MaxOccupancy = int.Parse(Console.ReadLine());
+
+                        roomRepo.Update(selectedRoom);
+
+                        Console.WriteLine("Room has been successfully updated");
+                        Console.Write("Press any key to continue");
+                        Console.ReadKey();
+                        break;
                     case ("Exit"):
                         runProgram = false;
                         break;
@@ -114,6 +177,10 @@ namespace RoomMates
                 "Show all chores",
                 "Add a chore",
                 "Search for a Chore",
+                "Show a Roommate",
+                "Get unassigned chores",
+                "Assign A Chore",
+                "Update a room",
                 "Exit"
             };
 

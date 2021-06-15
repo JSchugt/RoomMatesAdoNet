@@ -16,6 +16,7 @@ namespace RoomMates.Repositories
         {
             using (SqlConnection conn = Connection)
             {
+                conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = "SELECT Name FROM Chore WHERE Id = @id";
@@ -51,7 +52,49 @@ namespace RoomMates.Repositories
 
                     chore.Id = id;
                 }
+                conn.Close();
 
+            }
+        }
+        public List<Chore> GetUnassigned()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"Select c.id, c.name from Chore as c 
+                                        left join RoommateChore as r on r.ChoreId = c.Id 
+                                        where r.RoommateId is NULL;";
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    List<Chore> unassingedList = new List<Chore>() { };
+                    while (reader.Read())
+                    {
+                        Chore unassigned = new Chore()
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                        };
+
+                        unassingedList.Add(unassigned);
+                    }
+                    reader.Close();
+                    return unassingedList;
+                }
+            }
+        }
+        public void AssignAChore(int roommateId, int choreId)
+        {
+            using (SqlConnection conn = Connection) {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand()) {
+                    cmd.CommandText = @"Insert into RoommateChore (RoommateId, ChoreId)
+                                        Values (@roomateId, @choreid)";
+                    cmd.Parameters.AddWithValue("@roomateId", roommateId);
+                    cmd.Parameters.AddWithValue("@choreId", choreId);
+                    cmd.ExecuteNonQuery();
+                }
+                conn.Close();
             }
         }
         public List<Chore> GetAll()
